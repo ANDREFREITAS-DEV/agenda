@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento - Terapia</title>
+    <!-- Tailwind CSS para o Design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f2f8f8',
+                            100: '#dfefef',
+                            200: '#b8dbdb',
+                            500: '#3c8c8c',
+                            600: '#2d6a6a',
+                            700: '#235353',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-brand-50 min-h-screen py-8 px-4">
+    
+    <!-- Container Principal -->
+    <main class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+            
+            <!-- Coluna Esquerda: Info da Terapeuta -->
+            <div class="bg-brand-600 text-white p-8 md:w-2/5 flex flex-col justify-between">
+                <div>
+                    <!-- Espaço para Foto / Logo -->
+                    <div class="w-20 h-20 bg-brand-100 rounded-full mb-6 mx-auto md:mx-0 flex items-center justify-center text-brand-600 text-2xl font-bold">
+                        AS
+                    </div>
+                    <h1 class="text-2xl font-semibold mb-1 text-center md:text-left">Dra. Ana Souza</h1>
+                    <p class="text-brand-200 text-sm mb-6 text-center md:text-left">Psicologia Clínica • CRP 00/00000</p>
+                    
+                    <h2 class="text-lg font-medium mb-2 mt-8 text-center md:text-left">Agende sua Sessão</h2>
+                    <p class="text-brand-50 text-sm text-center md:text-left">Escolha o melhor dia e horário. As sessões têm duração de 50 minutos.</p>
+                    
+                    <div class="space-y-4 text-sm mt-8">
+                        <div class="flex items-center justify-center md:justify-start">
+                            <svg class="w-5 h-5 mr-3 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            Atendimento Online (Google Meet)
+                        </div>
+                        <div class="flex items-center justify-center md:justify-start">
+                            <svg class="w-5 h-5 mr-3 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            R$ 150,00 / sessão
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna Direita: Calendário e Fluxo -->
+            <div class="p-8 md:w-3/5" id="app-container">
+                
+                <!-- Etapa 1: Calendário -->
+                <div id="step-1">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">1. Selecione a Data</h3>
+                    <div class="grid grid-cols-7 gap-2 mb-2 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+                    </div>
+                    <div class="grid grid-cols-7 gap-2 mb-6 text-center text-sm" id="calendar-days">
+                        <!-- Dias renderizados via JS -->
+                    </div>
+
+                    <!-- Horários Dinâmicos -->
+                    <div id="time-slots" class="hidden animate-fade-in">
+                        <hr class="border-gray-100 my-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">2. Selecione o Horário</h3>
+                        <div class="grid grid-cols-3 gap-3" id="time-buttons">
+                            <!-- Horários renderizados via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Etapa 2: Formulário -->
+                <div id="step-2" class="hidden">
+                    <button onclick="goBack()" class="text-brand-600 text-sm font-medium hover:underline flex items-center mb-6">
+                        &larr; Voltar para horários
+                    </button>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">3. Detalhes do Paciente</h3>
+                    <div class="bg-gray-50 border border-gray-100 rounded-lg p-4 mb-6">
+                        <p class="text-sm text-gray-500">Horário reservado:</p>
+                        <p id="selected-datetime" class="font-semibold text-brand-600 text-lg"></p>
+                    </div>
+                    
+                    <form id="booking-form" onsubmit="submitForm(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
+                            <input type="text" id="form-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label>
+                            <input type="tel" id="form-phone" placeholder="(00) 00000-0000" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Motivo da consulta (opcional)</label>
+                            <textarea id="form-notes" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-brand-600 text-white font-semibold py-3 rounded-lg hover:bg-brand-700 transition mt-6 shadow-md">
+                            Confirmar Agendamento
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Etapa 3: Sucesso -->
+                <div id="step-success" class="hidden text-center py-10">
+                    <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-2">Pedido Recebido!</h3>
+                    <p class="text-gray-600 mb-6">Sua solicitação de agendamento foi enviada. Entrarei em contato via WhatsApp em breve para confirmar.</p>
+                    <button onclick="location.reload()" class="text-brand-600 font-medium hover:underline">Voltar ao início</button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Lógica da Interface -->
+    <script>
+        const daysContainer = document.getElementById('calendar-days');
+        const timeSlots = document.getElementById('time-slots');
+        const timeButtons = document.getElementById('time-buttons');
+        const step1 = document.getElementById('step-1');
+        const step2 = document.getElementById('step-2');
+        const stepSuccess = document.getElementById('step-success');
+        const selectedDateTimeText = document.getElementById('selected-datetime');
+        
+        let selectedDate = null;
+        let selectedTime = null;
+
+        // Gerador de calendário simplificado para o mês atual
+        const startEmptyDays = 2; // Deslocamento na grid para começar na terça-feira (exemplo)
+        
+        for(let j=0; j<startEmptyDays; j++) {
+            const emptyDiv = document.createElement('div');
+            daysContainer.appendChild(emptyDiv);
+        }
+
+        for(let i = 1; i <= 31; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'w-full aspect-square rounded-full flex items-center justify-center transition font-medium text-sm mx-auto max-w-[40px]';
+            
+            if(i < new Date().getDate()) { // Dias que já passaram
+                btn.classList.add('text-gray-300', 'cursor-not-allowed');
+            } else { // Dias disponíveis
+                btn.classList.add('text-gray-700', 'hover:bg-brand-100', 'hover:text-brand-700');
+                btn.onclick = () => selectDate(i, btn);
+            }
+            btn.innerText = i;
+            daysContainer.appendChild(btn);
+        }
+
+        function selectDate(day, btnElement) {
+            // Remove seleção anterior
+            const allBtns = daysContainer.querySelectorAll('button');
+            allBtns.forEach(el => {
+                if(!el.classList.contains('cursor-not-allowed')) {
+                    el.classList.remove('bg-brand-600', 'text-white', 'shadow-md');
+                    el.classList.add('hover:bg-brand-100', 'text-gray-700');
+                }
+            });
+            
+            // Ativa o dia clicado
+            btnElement.classList.add('bg-brand-600', 'text-white', 'shadow-md');
+            btnElement.classList.remove('hover:bg-brand-100', 'text-gray-700');
+            
+            selectedDate = `${day} de Outubro`;
+            timeSlots.classList.remove('hidden');
+            
+            // Gerar horários fictícios disponíveis
+            timeButtons.innerHTML = '';
+            const times = ['09:00', '10:00', '14:00', '16:00', '18:00', '19:00'];
+            times.forEach(time => {
+                const tBtn = document.createElement('button');
+                tBtn.className = 'border border-brand-200 py-2 rounded-lg text-brand-600 font-medium hover:bg-brand-600 hover:text-white transition';
+                tBtn.innerText = time;
+                tBtn.onclick = () => selectTime(time);
+                timeButtons.appendChild(tBtn);
+            });
+        }
+
+        function selectTime(time) {
+            selectedTime = time;
+            selectedDateTimeText.innerText = `${selectedDate} às ${selectedTime}`;
+            step1.classList.add('hidden');
+            step2.classList.remove('hidden');
+        }
+
+        function goBack() {
+            step2.classList.add('hidden');
+            step1.classList.remove('hidden');
+        }
+
+        function submitForm(e) {
+            e.preventDefault();
+            // Aqui é onde os dados seriam enviados
+            step2.classList.add('hidden');
+            stepSuccess.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
