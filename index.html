@@ -4,21 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agendamento - Terapia</title>
-    <!-- Tailwind CSS para o Design -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        brand: {
-                            50: '#f2f8f8',
-                            100: '#dfefef',
-                            200: '#b8dbdb',
-                            500: '#3c8c8c',
-                            600: '#2d6a6a',
-                            700: '#235353',
-                        }
+                        brand: { 50: '#f2f8f8', 100: '#dfefef', 200: '#b8dbdb', 500: '#3c8c8c', 600: '#2d6a6a', 700: '#235353' }
                     }
                 }
             }
@@ -27,90 +19,87 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
     </style>
 </head>
-<body class="bg-brand-50 min-h-screen py-8 px-4">
+<body class="bg-brand-50 min-h-screen py-8 px-4 flex flex-col">
     
-    <!-- Container Principal -->
-    <main class="max-w-4xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+    <!-- Botão de Acesso Restrito (Rodapé) -->
+    <div class="fixed bottom-4 right-4 z-50">
+        <button onclick="toggleAdminPanel()" class="bg-gray-800 text-white p-3 rounded-full shadow-lg hover:bg-gray-700 transition" title="Área da Terapeuta">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        </button>
+    </div>
+
+    <!-- Container Principal do Paciente -->
+    <main id="patient-view" class="max-w-4xl w-full mx-auto flex-1">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row h-full">
             
-            <!-- Coluna Esquerda: Info da Terapeuta -->
+            <!-- Coluna Esquerda: Info -->
             <div class="bg-brand-600 text-white p-8 md:w-2/5 flex flex-col justify-between">
                 <div>
-                    <!-- Espaço para Foto / Logo -->
-                    <div class="w-20 h-20 bg-brand-100 rounded-full mb-6 mx-auto md:mx-0 flex items-center justify-center text-brand-600 text-2xl font-bold">
+                    <div class="w-20 h-20 bg-brand-100 rounded-full mb-6 mx-auto md:mx-0 flex items-center justify-center text-brand-600 text-2xl font-bold shadow-inner">
                         AS
                     </div>
                     <h1 class="text-2xl font-semibold mb-1 text-center md:text-left">Dra. Ana Souza</h1>
                     <p class="text-brand-200 text-sm mb-6 text-center md:text-left">Psicologia Clínica • CRP 00/00000</p>
                     
                     <h2 class="text-lg font-medium mb-2 mt-8 text-center md:text-left">Agende sua Sessão</h2>
-                    <p class="text-brand-50 text-sm text-center md:text-left">Escolha o melhor dia e horário. As sessões têm duração de 50 minutos.</p>
-                    
-                    <div class="space-y-4 text-sm mt-8">
-                        <div class="flex items-center justify-center md:justify-start">
-                            <svg class="w-5 h-5 mr-3 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                            Atendimento Online (Google Meet)
-                        </div>
-                        <div class="flex items-center justify-center md:justify-start">
-                            <svg class="w-5 h-5 mr-3 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            R$ 150,00 / sessão
-                        </div>
-                    </div>
+                    <p class="text-brand-50 text-sm text-center md:text-left leading-relaxed">Escolha o melhor dia e horário. As sessões têm duração de 50 minutos.</p>
                 </div>
             </div>
 
-            <!-- Coluna Direita: Calendário e Fluxo -->
-            <div class="p-8 md:w-3/5" id="app-container">
+            <!-- Coluna Direita: Fluxo de Agendamento -->
+            <div class="p-8 md:w-3/5 overflow-y-auto">
                 
                 <!-- Etapa 1: Calendário -->
                 <div id="step-1">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">1. Selecione a Data</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">1. Selecione a Data</h3>
+                        <span id="current-month" class="text-brand-600 font-medium text-sm bg-brand-50 px-3 py-1 rounded-full"></span>
+                    </div>
                     <div class="grid grid-cols-7 gap-2 mb-2 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
                     </div>
                     <div class="grid grid-cols-7 gap-2 mb-6 text-center text-sm" id="calendar-days">
-                        <!-- Dias renderizados via JS -->
+                        <!-- Dias injetados via JS -->
                     </div>
 
-                    <!-- Horários Dinâmicos -->
-                    <div id="time-slots" class="hidden animate-fade-in">
+                    <!-- Horários -->
+                    <div id="time-slots" class="hidden">
                         <hr class="border-gray-100 my-6">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">2. Selecione o Horário</h3>
-                        <div class="grid grid-cols-3 gap-3" id="time-buttons">
-                            <!-- Horários renderizados via JS -->
-                        </div>
+                        <div class="grid grid-cols-3 gap-3" id="time-buttons"></div>
                     </div>
                 </div>
 
                 <!-- Etapa 2: Formulário -->
                 <div id="step-2" class="hidden">
-                    <button onclick="goBack()" class="text-brand-600 text-sm font-medium hover:underline flex items-center mb-6">
-                        &larr; Voltar para horários
+                    <button onclick="goBackToCalendar()" class="text-brand-600 text-sm font-medium hover:underline flex items-center mb-6">
+                        &larr; Voltar
                     </button>
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2">3. Detalhes do Paciente</h3>
-                    <div class="bg-gray-50 border border-gray-100 rounded-lg p-4 mb-6">
-                        <p class="text-sm text-gray-500">Horário reservado:</p>
-                        <p id="selected-datetime" class="font-semibold text-brand-600 text-lg"></p>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">3. Seus Detalhes</h3>
+                    <div class="bg-brand-50 border border-brand-100 rounded-lg p-4 mb-6">
+                        <p class="text-sm text-brand-600">Horário selecionado:</p>
+                        <p id="selected-datetime" class="font-bold text-brand-700 text-lg"></p>
                     </div>
                     
-                    <form id="booking-form" onsubmit="submitForm(event)" class="space-y-4">
+                    <form onsubmit="submitForm(event)" class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
-                            <input type="text" id="form-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                            <input type="text" id="form-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label>
-                            <input type="tel" id="form-phone" placeholder="(00) 00000-0000" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                            <input type="tel" id="form-phone" placeholder="(18) 90000-0000" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Motivo da consulta (opcional)</label>
-                            <textarea id="form-notes" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition"></textarea>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Motivo (Opcional)</label>
+                            <textarea id="form-notes" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"></textarea>
                         </div>
-                        <button type="submit" class="w-full bg-brand-600 text-white font-semibold py-3 rounded-lg hover:bg-brand-700 transition mt-6 shadow-md">
-                            Confirmar Agendamento
+                        <button type="submit" class="w-full bg-brand-600 text-white font-semibold py-3 rounded-lg hover:bg-brand-700 transition shadow-md mt-4 flex justify-center items-center">
+                            Solicitar via WhatsApp
+                            <svg class="w-5 h-5 ml-2" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
                         </button>
                     </form>
                 </div>
@@ -120,43 +109,75 @@
                     <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                     </div>
-                    <h3 class="text-2xl font-semibold text-gray-800 mb-2">Pedido Recebido!</h3>
-                    <p class="text-gray-600 mb-6">Sua solicitação de agendamento foi enviada. Entrarei em contato via WhatsApp em breve para confirmar.</p>
-                    <button onclick="location.reload()" class="text-brand-600 font-medium hover:underline">Voltar ao início</button>
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-2">Quase lá!</h3>
+                    <p class="text-gray-600 mb-6">O WhatsApp foi aberto para você enviar sua solicitação. Se não abriu automaticamente, clique no botão abaixo.</p>
+                    <button onclick="location.reload()" class="text-brand-600 font-medium hover:underline mt-4">Fazer novo agendamento</button>
                 </div>
-
             </div>
         </div>
     </main>
 
-    <!-- Lógica da Interface -->
-    <script>
-        const daysContainer = document.getElementById('calendar-days');
-        const timeSlots = document.getElementById('time-slots');
-        const timeButtons = document.getElementById('time-buttons');
-        const step1 = document.getElementById('step-1');
-        const step2 = document.getElementById('step-2');
-        const stepSuccess = document.getElementById('step-success');
-        const selectedDateTimeText = document.getElementById('selected-datetime');
-        
-        let selectedDate = null;
-        let selectedTime = null;
+    <!-- ÁREA DA TERAPEUTA (Painel Administrativo Local) -->
+    <main id="admin-view" class="hidden max-w-4xl w-full mx-auto flex-1 flex-col">
+        <div class="bg-white rounded-2xl shadow-xl p-8 flex-1">
+            <div class="flex justify-between items-center mb-8 border-b pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Minha Agenda</h2>
+                    <p class="text-sm text-gray-500">Agendamentos salvos neste dispositivo</p>
+                </div>
+                <button onclick="toggleAdminPanel()" class="text-gray-500 hover:text-gray-800">
+                    Fechar X
+                </button>
+            </div>
 
-        // Gerador de calendário simplificado para o mês atual
-        const startEmptyDays = 2; // Deslocamento na grid para começar na terça-feira (exemplo)
-        
-        for(let j=0; j<startEmptyDays; j++) {
-            const emptyDiv = document.createElement('div');
-            daysContainer.appendChild(emptyDiv);
+            <!-- Formulário para Terapeuta adicionar o paciente manualmente ao receber o WhatsApp -->
+            <div class="bg-gray-50 p-4 rounded-lg mb-8 border border-gray-200">
+                <h3 class="font-semibold text-gray-700 mb-3">Adicionar Novo Agendamento</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <input type="text" id="admin-name" placeholder="Nome do Paciente" class="px-3 py-2 border rounded outline-none focus:border-brand-500">
+                    <input type="text" id="admin-date" placeholder="Data (Ex: 15/10)" class="px-3 py-2 border rounded outline-none focus:border-brand-500">
+                    <input type="text" id="admin-time" placeholder="Horário (Ex: 14:00)" class="px-3 py-2 border rounded outline-none focus:border-brand-500">
+                    <button onclick="saveAdminAppointment()" class="bg-brand-600 text-white font-medium rounded hover:bg-brand-700">Salvar</button>
+                </div>
+            </div>
+
+            <!-- Lista de Agendamentos -->
+            <h3 class="font-semibold text-gray-700 mb-4">Próximas Sessões</h3>
+            <div id="appointments-list" class="space-y-3">
+                <!-- Lista injetada via JS -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- 1. LÓGICA DO CALENDÁRIO (PACIENTE) ---
+        const daysContainer = document.getElementById('calendar-days');
+        const timeButtons = document.getElementById('time-buttons');
+        let selectedDateText = '';
+        let selectedTime = '';
+
+        // Pegar mês atual
+        const hoje = new Date();
+        const nomeMes = hoje.toLocaleString('pt-BR', { month: 'long' });
+        document.getElementById('current-month').innerText = nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
+
+        // Renderizar dias (simplificado para o mês atual)
+        const diasNoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
+        const primeiroDiaSemana = new Date(hoje.getFullYear(), hoje.getMonth(), 1).getDay();
+
+        // Espaços vazios no início do mês
+        for(let i = 0; i < primeiroDiaSemana; i++) {
+            daysContainer.appendChild(document.createElement('div'));
         }
 
-        for(let i = 1; i <= 31; i++) {
+        // Dias do mês
+        for(let i = 1; i <= diasNoMes; i++) {
             const btn = document.createElement('button');
             btn.className = 'w-full aspect-square rounded-full flex items-center justify-center transition font-medium text-sm mx-auto max-w-[40px]';
             
-            if(i < new Date().getDate()) { // Dias que já passaram
+            if(i < hoje.getDate()) {
                 btn.classList.add('text-gray-300', 'cursor-not-allowed');
-            } else { // Dias disponíveis
+            } else {
                 btn.classList.add('text-gray-700', 'hover:bg-brand-100', 'hover:text-brand-700');
                 btn.onclick = () => selectDate(i, btn);
             }
@@ -165,26 +186,20 @@
         }
 
         function selectDate(day, btnElement) {
-            // Remove seleção anterior
-            const allBtns = daysContainer.querySelectorAll('button');
-            allBtns.forEach(el => {
+            document.querySelectorAll('#calendar-days button').forEach(el => {
                 if(!el.classList.contains('cursor-not-allowed')) {
                     el.classList.remove('bg-brand-600', 'text-white', 'shadow-md');
                     el.classList.add('hover:bg-brand-100', 'text-gray-700');
                 }
             });
-            
-            // Ativa o dia clicado
             btnElement.classList.add('bg-brand-600', 'text-white', 'shadow-md');
             btnElement.classList.remove('hover:bg-brand-100', 'text-gray-700');
             
-            selectedDate = `${day} de Outubro`;
-            timeSlots.classList.remove('hidden');
+            selectedDateText = `${day} de ${nomeMes}`;
+            document.getElementById('time-slots').classList.remove('hidden');
             
-            // Gerar horários fictícios disponíveis
             timeButtons.innerHTML = '';
-            const times = ['09:00', '10:00', '14:00', '16:00', '18:00', '19:00'];
-            times.forEach(time => {
+            ['09:00', '10:00', '14:00', '16:00', '18:00', '19:00'].forEach(time => {
                 const tBtn = document.createElement('button');
                 tBtn.className = 'border border-brand-200 py-2 rounded-lg text-brand-600 font-medium hover:bg-brand-600 hover:text-white transition';
                 tBtn.innerText = time;
@@ -195,21 +210,108 @@
 
         function selectTime(time) {
             selectedTime = time;
-            selectedDateTimeText.innerText = `${selectedDate} às ${selectedTime}`;
-            step1.classList.add('hidden');
-            step2.classList.remove('hidden');
+            document.getElementById('selected-datetime').innerText = `${selectedDateText} às ${selectedTime}`;
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.remove('hidden');
         }
 
-        function goBack() {
-            step2.classList.add('hidden');
-            step1.classList.remove('hidden');
+        function goBackToCalendar() {
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-1').classList.remove('hidden');
         }
 
+        // --- 2. LÓGICA DE ENVIO (WHATSAPP) ---
         function submitForm(e) {
             e.preventDefault();
-            // Aqui é onde os dados seriam enviados
-            step2.classList.add('hidden');
-            stepSuccess.classList.remove('hidden');
+            
+            const nome = document.getElementById('form-name').value;
+            const telefone = document.getElementById('form-phone').value;
+            const notas = document.getElementById('form-notes').value;
+
+            let mensagem = `Olá! Gostaria de agendar uma sessão.\n\n*Nome:* ${nome}\n*Contato:* ${telefone}\n*Data:* ${selectedDateText}\n*Horário:* ${selectedTime}\n`;
+            if (notas) mensagem += `*Observação:* ${notas}`;
+
+            // Número da Terapeuta Integrado
+            const numeroWhatsApp = "5518996007466"; 
+            const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`;
+
+            window.open(urlWhatsApp, '_blank');
+
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-success').classList.remove('hidden');
+        }
+
+
+        // --- 3. LÓGICA DA ÁREA DA TERAPEUTA (LOCAL STORAGE) ---
+        function toggleAdminPanel() {
+            const patientView = document.getElementById('patient-view');
+            const adminView = document.getElementById('admin-view');
+            
+            if(adminView.classList.contains('hidden')) {
+                patientView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                adminView.classList.add('flex');
+                loadAppointments();
+            } else {
+                adminView.classList.add('hidden');
+                adminView.classList.remove('flex');
+                patientView.classList.remove('hidden');
+            }
+        }
+
+        function saveAdminAppointment() {
+            const nome = document.getElementById('admin-name').value;
+            const data = document.getElementById('admin-date').value;
+            const hora = document.getElementById('admin-time').value;
+
+            if(!nome || !data || !hora) return alert("Preencha todos os campos!");
+
+            // Busca os agendamentos já salvos no celular da terapeuta
+            let agendamentos = JSON.parse(localStorage.getItem('agenda_terapeuta')) || [];
+            
+            // Adiciona o novo
+            agendamentos.push({ id: Date.now(), nome, data, hora });
+            
+            // Salva no aparelho de volta
+            localStorage.setItem('agenda_terapeuta', JSON.stringify(agendamentos));
+            
+            // Limpa os campos e recarrega a lista
+            document.getElementById('admin-name').value = '';
+            document.getElementById('admin-date').value = '';
+            document.getElementById('admin-time').value = '';
+            loadAppointments();
+        }
+
+        function deleteAppointment(id) {
+            let agendamentos = JSON.parse(localStorage.getItem('agenda_terapeuta')) || [];
+            agendamentos = agendamentos.filter(ag => ag.id !== id);
+            localStorage.setItem('agenda_terapeuta', JSON.stringify(agendamentos));
+            loadAppointments();
+        }
+
+        function loadAppointments() {
+            const lista = document.getElementById('appointments-list');
+            let agendamentos = JSON.parse(localStorage.getItem('agenda_terapeuta')) || [];
+            
+            lista.innerHTML = '';
+            
+            if(agendamentos.length === 0) {
+                lista.innerHTML = '<p class="text-gray-400 text-sm">Nenhum agendamento salvo.</p>';
+                return;
+            }
+
+            agendamentos.forEach(ag => {
+                const item = document.createElement('div');
+                item.className = 'flex justify-between items-center bg-white border p-4 rounded-lg shadow-sm';
+                item.innerHTML = `
+                    <div>
+                        <p class="font-bold text-gray-800">${ag.nome}</p>
+                        <p class="text-sm text-gray-600">${ag.data} às ${ag.hora}</p>
+                    </div>
+                    <button onclick="deleteAppointment(${ag.id})" class="text-red-500 hover:text-red-700 text-sm font-medium">Cancelar</button>
+                `;
+                lista.appendChild(item);
+            });
         }
     </script>
 </body>
